@@ -17,7 +17,9 @@ app.use("/", authRoutes);
 const protect = require("./middleware/auth");
 
 const path = require('path');
+const fs = require('fs');
 const shortid = require('shortid');
+const multer = require('multer');
 const services = require('./services.config');
 const User = require('./model/user');
 
@@ -35,6 +37,16 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'view'));
 
 app.use('/url', urlRoutes);
+
+// Multer config for file uploads
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) { cb(null, uploadDir); },
+    filename: function (req, file, cb) { cb(null, Date.now() + '-' + file.originalname); }
+});
+const upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
 function findServiceByKey(key) {
     return services.find((service) => service.key === key);
@@ -112,6 +124,10 @@ app.get('/services/:serviceKey', protect, (req, res) => {
         return res.render('home', buildShortenerViewModel(req));
     }
 
+    if (service.key === 'file-upload') {
+        return res.render('file-upload');
+    }
+
     return res.render('coming-soon', { service });
 });
 
@@ -138,6 +154,19 @@ app.post('/services/url-shortener/shorten', protect, async (req, res) => {
         console.error('Error creating short URL:', err);
         return res.render('home', buildShortenerViewModel(req, null, 'An unexpected error occurred.'));
     }
+});
+
+// File upload endpoint
+app.post('/services/file-upload/upload', protect, upload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+    return res.json({
+        filename: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+        path: req.file.filename,
+    });
 });
 
 // Redirect for generated short URLs

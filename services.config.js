@@ -7,6 +7,13 @@ module.exports = [
         status: 'available',
     },
     {
+        key: 'file-upload',
+        name: '📁 File Upload',
+        description: 'Drag and drop or click to upload files. Supports all common formats.',
+        route: '/services/file-upload',
+        status: 'available',
+    },
+    {
         key: 'smart-bio',
         name: '🔗 Smart Bio System',
         description: 'A smart mobile-first bio platform with branding, analytics, and custom domains.',
