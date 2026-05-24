@@ -1,6 +1,6 @@
-# 🤝 Contributing to CreatorOS
+# 🤝 Contributing to CreatorOs
 
-Thank you for wanting to contribute to CreatorOS! We're excited to have you help build the future of creator tools.
+Thank you for wanting to contribute to CreatorOs! We're excited to have you help build the future of creator tools.
 
 ## 🚀 Quick Start
 
@@ -281,7 +281,7 @@ Real-world use cases:
 ### Post-Merge
 - Your changes will be deployed in the next release
 - You'll be credited as a contributor
-- Your code is now part of CreatorOS! 🎉
+- Your code is now part of CreatorOs! 🎉
 
 ---
 

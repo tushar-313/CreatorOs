@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=CreaterOS&fontSize=72&fontColor=fff&animation=twinkling&fontAlignY=32&desc=The%20Operating%20System%20for%20Creators&descAlignY=56&descSize=20&descColor=ffffff" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=CreatorOs&fontSize=72&fontColor=fff&animation=twinkling&fontAlignY=32&desc=The%20Operating%20System%20for%20Creators&descAlignY=56&descSize=20&descColor=ffffff" width="100%"/>
 
 <br/>
 
@@ -51,11 +51,11 @@ Every creator knows this chaos:
 
 **That's 6+ apps, 6+ subscriptions, 6+ logins — just to run your creator business.**
 
-CreaterOS ends this. One platform. Everything connected. Zero context-switching.
+CreatorOs ends this. One platform. Everything connected. Zero context-switching.
 
 ---
 
-## ✨ What CreaterOS Does
+## ✨ What CreatorOs Does
 
 <table>
 <tr>
@@ -154,10 +154,10 @@ npm >= 9.0.0
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/crateros.git
+git clone https://github.com/yourusername/CreatorOs.git
 
 # Navigate into the project
-cd crateros
+cd CreatorOs
 
 # Install dependencies
 npm install
@@ -204,7 +204,7 @@ open http://localhost:3000
 ## 📁 Project Structure
 
 ```
-crateros/
+CreatorOs/
 ├── 📂 app/                    # Next.js App Router
 │   ├── 📂 (auth)/             # Auth pages (login, signup)
 │   ├── 📂 (dashboard)/        # Main dashboard routes
@@ -233,7 +233,7 @@ crateros/
 
 </div>
 
-If you're building an audience and monetizing your knowledge — CreaterOS is your control center.
+If you're building an audience and monetizing your knowledge — CreatorOs is your control center.
 
 ---
 
@@ -346,7 +346,7 @@ Every contribution, no matter how small, helps us build something amazing for cr
 
 <br/>
 
-*If CreaterOS saves you time, give it a ⭐ — it means the world.*
+*If CreatorOs saves you time, give it a ⭐ — it means the world.*
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer" width="100%"/>
 

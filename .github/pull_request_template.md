@@ -67,4 +67,4 @@ Fixes #
 
 ---
 
-**Thank you for contributing to CreatorOS!** 🙌
+**Thank you for contributing to CreatorOs!** 🙌
