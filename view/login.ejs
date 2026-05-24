@@ -174,6 +174,23 @@
         .switch-link a:hover {
             color: #a5f3fc;
         }
+
+        .contributor-form {
+            margin-top: 1rem;
+        }
+
+        .contributor-btn {
+            width: 100%;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            box-shadow: none;
+        }
+
+        .contributor-btn:hover {
+            background: rgba(34, 211, 238, 0.12);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -191,6 +208,10 @@
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Password" required>
                 <button type="submit">Login</button>
+            </form>
+
+            <form action="/login/contributor" method="POST" class="contributor-form">
+                <button type="submit" class="contributor-btn">Login as Contributor</button>
             </form>
 
             <p class="switch-link">
