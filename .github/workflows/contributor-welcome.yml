@@ -22,8 +22,8 @@ jobs:
               issue_number: context.payload.pull_request.number,
               body: `Thanks for contributing to CreatorOS 🚀
 
-If you find this project useful, consider giving it a ⭐ on GitHub.
-It helps the project grow and motivates contributors.
+              If you find this project useful, consider giving it a ⭐ on GitHub.
+              It helps the project grow and motivates contributors.
 
-Thanks again for contributing! 🙌`
+              Thanks again for contributing! 🙌`
             })
