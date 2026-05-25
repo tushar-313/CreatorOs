@@ -19,7 +19,53 @@ const urlSchema= new mongoose.Schema({
     
 });
 
-const Url= mongoose.model('Url', urlSchema);
+const MongooseUrlModel = mongoose.model('Url', urlSchema);
 
-module.exports= Url;
+// In-memory array for mock URLs
+const mockUrls = [];
+
+class MockUrlModel {
+    constructor(data) {
+        this.shortId = data.shortId;
+        this.redirectUrl = data.redirectUrl;
+        this.totalClicks = data.totalClicks || 0;
+        this.createdAt = data.createdAt || [];
+    }
+
+    async save() {
+        const existing = mockUrls.find(u => u.shortId === this.shortId);
+        if (existing) {
+            Object.assign(existing, this);
+        } else {
+            mockUrls.push(this);
+        }
+        return this;
+    }
+
+    static async create(data) {
+        const url = new MockUrlModel(data);
+        await url.save();
+        return url;
+    }
+
+    static async findOne(query) {
+        const found = mockUrls.find(u => u.shortId === query.shortId);
+        return found ? new MockUrlModel(found) : null;
+    }
+}
+
+module.exports = new Proxy({}, {
+    get(target, prop) {
+        if (process.env.USE_MOCK_DB === "true") {
+            return MockUrlModel[prop] || MockUrlModel;
+        }
+        return MongooseUrlModel[prop];
+    },
+    construct(target, args) {
+        if (process.env.USE_MOCK_DB === "true") {
+            return new MockUrlModel(...args);
+        }
+        return new MongooseUrlModel(...args);
+    }
+});
     

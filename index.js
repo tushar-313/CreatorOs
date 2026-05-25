@@ -12,21 +12,12 @@ const requiredEnvVars = [
 const missingVars = requiredEnvVars.filter((v) => !process.env[v.name]);
 
 if (missingVars.length > 0) {
-    console.error('\n❌ Missing required environment variables:');
+    console.warn('\n⚠️ Missing environment variables for full production mode:');
     missingVars.forEach((v) => {
-        console.error(`   - ${v.name} (${v.description})`);
+        console.warn(`   - ${v.name} (${v.description})`);
     });
-    console.error('\n📋 To set them up:');
-    console.error('   1. Copy the example env file:');
-    console.error('      cp .env.example .env.local');
-    console.error('   2. Edit .env.local and fill in the values:');
-    console.error('      - MONGODB_URI: Your MongoDB connection string');
-    console.error('        (for local MongoDB: mongodb://localhost:27017/creatoros)');
-    console.error('      - JWT_SECRET: Generate a random secret');
-    console.error('        by running: openssl rand -base64 32');
-    console.error('   3. Run the server again:');
-    console.error('      npm run dev\n');
-    process.exit(1);
+    console.warn('\n📋 The app will start in local mock mode.');
+    console.warn('   To use a real database, copy .env.example to .env.local and fill in the values.\n');
 }
 
 const app = express();
@@ -70,6 +61,7 @@ app.use("/", authRoutes);
 const protect = require("./middleware/auth");
 
 const fs = require('fs');
+app.use(express.static(path.join(__dirname, 'public')));
 const shortid = require('shortid');
 const multer = require('multer');
 const services = require('./services.config');

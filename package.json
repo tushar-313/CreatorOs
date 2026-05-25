@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "nodemon index.js",
+    "seed:test-user": "node scripts/seedTestUser.js",
+    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/style.css --minify",
+    "watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/style.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -26,7 +29,12 @@
     "nanoid": "^5.1.6",
     "nodemailer": "^6.10.1",
     "nodemon": "^3.1.10",
+    "puppeteer": "^25.0.4",
     "shortid": "^2.2.17",
     "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "tailwindcss": "^4.3.0"
   }
 }

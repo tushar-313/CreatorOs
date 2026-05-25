@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Upload - CreatorOS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/css/style.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-[#06101f] text-white font-[Poppins] min-h-screen">
@@ -66,7 +66,6 @@
         const progressPct = document.getElementById('progress-pct');
         const progressLabel = document.getElementById('progress-label');
         const statusEl = document.getElementById('status');
-
         let selectedFile = null;
 
         // Firefox fix: preventDefault is REQUIRED on dragover
