@@ -102,12 +102,18 @@ const sendCollaboratorInvite = async (req, res, next) => {
 
 const renderDashboard = async (req, res, options = {}) => {
   const userDoc = await User.findById(req.user.id).select('name email').lean();
-  const invites = await Invite.find({ inviter: req.user.id }).lean();
+  
+  const [pending, accepted, expired] = await Promise.all([
+    Invite.countDocuments({ inviter: req.user.id, status: 'pending' }),
+    Invite.countDocuments({ inviter: req.user.id, status: 'accepted' }),
+    Invite.countDocuments({ inviter: req.user.id, status: 'expired' })
+  ]);
+  
   const inviteSummary = {
-    total: invites.length,
-    pending: invites.filter((invite) => invite.status === 'pending').length,
-    accepted: invites.filter((invite) => invite.status === 'accepted').length,
-    expired: invites.filter((invite) => invite.status === 'expired').length,
+    total: pending + accepted + expired,
+    pending,
+    accepted,
+    expired,
   };
 
   return res.render('dashboard', {
