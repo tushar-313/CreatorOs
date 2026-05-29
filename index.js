@@ -72,19 +72,22 @@ const multer = require('multer');
 const services = require('./services.config');
 const User = require('./model/user');
 const Invite = require('./model/invite');
-
 const port = process.env.PORT || 3000;
 const urlRoutes = require('./routes/url');
+const asyncHandler = require('./utils/asyncHandler');
 
 const suggestionRoutes = require('./routes/suggestionRoutes');
-// ... after your other app.use() lines:
+
 app.use('/suggestions', protect, suggestionRoutes);
 app.use('/services/creator-crm', protect, collaborationRoutes);
 app.post('/dashboard/accept-invite', protect, preventContributorWrites, acceptInviteFromDashboard);
 app.get('/invites/accept/:token', acceptInvite);
+
 const Url = require('./model/url');
 
-app.use('/url', urlRoutes);
+// ── CHANGE 1: /url → /api/urls (QR routes bhi yahan se serve honge) ──────────
+app.use('/api/urls', urlRoutes);
+
 app.use("/api/analytics", protect, analyticsRoutes);
 const settingsRoutes = require('./routes/settings');
 app.use('/api/settings', protect, settingsRoutes);
@@ -93,7 +96,12 @@ const uploadDir = "/tmp";
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) { cb(null, "/tmp"); },
-    filename: function (req, file, cb) { cb(null, Date.now() + '-' + file.originalname); }
+    filename: function (req, file, cb) { 
+        // 100% foolproof sanitization to prevent any path traversal cross-platform
+        let sanitizedFilename = path.basename(file.originalname);
+        sanitizedFilename = sanitizedFilename.replace(/[/\\?%*:|"<>]/g, '-').replace(/^\.+/, '');
+        cb(null, Date.now() + '-' + sanitizedFilename); 
+    }
 });
 const upload = multer({ storage: storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
@@ -185,7 +193,7 @@ function buildEmptyInviteSummary() {
     };
 }
 
-app.get("/dashboard", protect, async (req, res) => {
+app.get("/dashboard", protect, asyncHandler(async (req, res) => {
     const userDoc = isGuestContributor(req.user)
         ? null
         : await User.findById(req.user.id)
@@ -204,7 +212,7 @@ app.get("/dashboard", protect, async (req, res) => {
             accepted,
             expired,
         }));
-    
+
     res.render("dashboard", {
         user: buildAccountViewModel(userDoc, req.user),
         services,
@@ -212,40 +220,24 @@ app.get("/dashboard", protect, async (req, res) => {
         inviteAcceptMessage: null,
         inviteAcceptError: null,
     });
-});
+}));
 
-app.get("/settings", protect, async (req, res) => {
-    const userDoc = isGuestContributor(req.user)
-        ? null
-        : await User.findById(req.user.id)
-            .select('name email alias bio twoFactorEnabled preferences passwordChangedAt updatedAt subscription')
-            .lean();
-
-    res.render("settings", {
-        user: buildAccountViewModel(userDoc, req.user),
-        isGuestContributor: isGuestContributor(req.user),
-    });
-});
-
-app.get("/profile", protect, async (req, res) => {
+app.get("/profile", protect, asyncHandler(async (req, res) => {
     const userDoc = isGuestContributor(req.user)
         ? null
         : await User.findById(req.user.id).select('name email').lean();
 
     res.render("profile", { user: buildAccountViewModel(userDoc, req.user) });
-});
+}));
 
-// Service hub landing page
 app.get('/', (req, res) => {
     res.render('services-hub', { services });
 });
 
-// Optional convenience route
 app.get('/services', (req, res) => {
     res.redirect('/');
 });
 
-// Protected service pages
 app.get('/services/:serviceKey', protect, (req, res) => {
     const service = findServiceByKey(req.params.serviceKey);
 
@@ -284,7 +276,6 @@ app.get('/services/:serviceKey', protect, (req, res) => {
 
 const { isValidUrl } = require('./utils/validators');
 
-// URL shortener submit flow (dedicated service route)
 app.post('/services/url-shortener/shorten', protect, preventContributorWrites, urlShortenerLimiter, async (req, res) => {
     const { redirectUrl } = req.body;
     if (!redirectUrl || !isValidUrl(redirectUrl)) {
@@ -301,13 +292,11 @@ app.post('/services/url-shortener/shorten', protect, preventContributorWrites, u
 
         return res.render('home', buildShortenerViewModel(req, shortId));
     } catch (err) {
-        // Log the actual error to the server console for debugging
         console.error('Error creating short URL:', err);
         return res.render('home', buildShortenerViewModel(req, null, 'An unexpected error occurred.'));
     }
 });
 
-// File upload endpoint
 app.post('/services/file-upload/upload', protect, preventContributorWrites, uploadLimiter, upload.single('file'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
@@ -321,23 +310,28 @@ app.post('/services/file-upload/upload', protect, preventContributorWrites, uplo
 });
 
 // Redirect for generated short URLs
-app.get('/u/:shortId', async (req, res) => {
+app.get('/u/:shortId', asyncHandler(async (req, res) => {
     const shortId = req.params.shortId;
 
-    const entry = await Url.findOne({ shortId });
+    try {
+        const entry = await Url.findOneAndUpdate(
+            { shortId },
+            {
+                $inc:  { totalClicks: 1 },
+                $push: { visitHistory: { timestamp: new Date(), source: 'direct' } },
+            },
+            { new: true }
+        );
 
-    if (entry) {
-        // Update analytics
-        entry.totalClicks++;
-        entry.createdAt.push({ timeStamp: new Date() });
-        await entry.save();
+        if (!entry) return res.status(404).send('URL not found');
+
         return res.redirect(entry.redirectUrl);
-    } else {
-        return res.status(404).send('URL not found');
+    } catch (err) {
+        console.error('[redirect]', err);
+        return res.status(500).send('Server error');
     }
-});
+}));
 
-// Centralized error handler
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
