@@ -1,0 +1,70 @@
+<aside class="workspace-sidebar" aria-label="Main navigation">
+    <a class="workspace-brand" href="/dashboard">
+        <h1>CreatorOS</h1>
+        <span>v2.0 BETA</span>
+    </a>
+
+    <nav class="workspace-nav">
+        <a href="/dashboard" class="<%= activeNav === 'dashboard' ? 'active' : '' %>">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Dashboard
+        </a>
+        <a href="/my-links" class="<%= activeNav === 'my-links' ? 'active' : '' %>" <%= activeNav === 'my-links' ? 'aria-current="page"' : '' %>>
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11 4.9"></path>
+                <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L13 19.1"></path>
+            </svg>
+            My Links
+        </a>
+        <a href="/dashboard#analytics" class="<%= activeNav === 'analytics' ? 'active' : '' %>">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M4 19V5"></path>
+                <path d="M9 19V9"></path>
+                <path d="M14 19V3"></path>
+                <path d="M19 19v-7"></path>
+            </svg>
+            Analytics
+        </a>
+        <a href="/services/creator-crm" class="<%= activeNav === 'crm' ? 'active' : '' %>">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            CRM
+        </a>
+        <a href="/settings" class="<%= activeNav === 'settings' ? 'active' : '' %>">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 20.4a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 9c.14-.66-.07-1.35-.6-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6c.66-.14 1.35.07 1.82.6V5a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 3.6c.66.14 1.35-.07 1.82-.6l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.66.07 1.35-.6 1.82H20a2 2 0 0 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15Z"></path>
+            </svg>
+            Settings
+        </a>
+    </nav>
+
+    <div class="workspace-sidebar-footer">
+        <a href="#" class="btn-upgrade" id="upgrade-plan-btn">Upgrade Plan</a>
+        <a href="mailto:support@creatoros.app">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Support
+        </a>
+        <a href="/logout">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <path d="m16 17 5-5-5-5"></path>
+                <path d="M21 12H9"></path>
+            </svg>
+            Log Out
+        </a>
+    </div>
+</aside>

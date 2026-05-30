@@ -214,6 +214,21 @@ app.get("/dashboard", protect, async (req, res) => {
     });
 });
 
+app.get("/my-links", protect, async (req, res) => {
+    const userDoc = isGuestContributor(req.user)
+        ? null
+        : await User.findById(req.user.id).select('name email').lean();
+
+    const host = req.get('host');
+    const domain = host || 'creatoros.link';
+
+    res.render("my-links", {
+        user: buildAccountViewModel(userDoc, req.user),
+        isGuestContributor: isGuestContributor(req.user),
+        domain,
+    });
+});
+
 app.get("/settings", protect, async (req, res) => {
     const userDoc = isGuestContributor(req.user)
         ? null
@@ -297,6 +312,8 @@ app.post('/services/url-shortener/shorten', protect, preventContributorWrites, u
         await Url.create({
             shortId,
             redirectUrl,
+            userId: req.user?.id || null,
+            linkedAt: new Date(),
         });
 
         return res.render('home', buildShortenerViewModel(req, shortId));

@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const Url = require('../model/url');
-const { handleGenerateShortUrl, handleGetAnalytics } = require('../controller/url');
+const {
+    handleGenerateShortUrl,
+    handleListUserLinks,
+    handleGetAnalytics,
+} = require('../controller/url');
 const protect = require('../middleware/auth');
 const { preventContributorWrites } = require('../middleware/auth');
 
+router.get('/', protect, handleListUserLinks);
 router.post('/', protect, preventContributorWrites, handleGenerateShortUrl);
-router.get('/analytics/:shortId', handleGetAnalytics)
+router.get('/analytics/:shortId', handleGetAnalytics);
 
 module.exports = router;

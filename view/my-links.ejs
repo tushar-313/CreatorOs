@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>My Links | CreatorOS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/workspace-shell.css">
+    <link rel="stylesheet" href="/css/my-links.css">
+</head>
+<body class="workspace-page links-page"
+    data-user='<%- JSON.stringify({ name: user.name, initials: user.initials, isGuestContributor: isGuestContributor }) %>'
+    data-domain="<%= domain %>">
+
+    <div class="workspace-layout">
+        <%- include('partials/workspace-sidebar', { activeNav: 'my-links' }) %>
+
+        <main class="workspace-main">
+            <header class="page-topbar">
+                <h1>URL Shortener</h1>
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                    <input type="search" id="link-search" placeholder="Search links..." aria-label="Search links">
+                </div>
+                <div class="topbar-actions">
+                    <button type="button" class="btn-new-link" id="scroll-shorten-btn">+ New Link</button>
+                    <a href="/profile" class="user-badge" aria-label="View profile">
+                        <div class="user-avatar"><%= user.initials %></div>
+                        <div class="user-info">
+                            <span class="user-name"><%= user.name %></span>
+                            <span class="user-role">Pro Member</span>
+                        </div>
+                    </a>
+                </div>
+            </header>
+
+            <% if (isGuestContributor) { %>
+                <div class="guest-banner" style="background:var(--ws-yellow);border:2px solid var(--ws-border);padding:0.75rem 1rem;margin-bottom:1.5rem;font-weight:600;">
+                    Contributor accounts can view links but cannot create new ones.
+                </div>
+            <% } %>
+
+            <section class="links-hero" id="shorten-section">
+                <span class="links-hero-badge">FASTEST SHORTENER</span>
+                <h2>Shorten your long URLs with style.</h2>
+                <form id="shorten-form" class="shorten-form">
+                    <div class="shorten-input-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11 4.9"></path>
+                            <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L13 19.1"></path>
+                        </svg>
+                        <input type="url" id="redirect-url" class="shorten-input" placeholder="Paste your long link here… https://" required <%= isGuestContributor ? 'disabled' : '' %>>
+                    </div>
+                    <button type="submit" class="btn-shorten" id="shorten-btn" <%= isGuestContributor ? 'disabled' : '' %>>SHORTEN NOW</button>
+                </form>
+                <div class="shorten-meta">
+                    <span class="domain-chip">Default domain: <strong id="domain-label"><%= domain %>/</strong></span>
+                    <button type="button" class="slug-toggle" id="slug-toggle">Edit slug &amp; tag</button>
+                </div>
+                <div class="slug-panel" id="slug-panel">
+                    <div class="slug-field">
+                        <label for="custom-slug">Custom slug (optional)</label>
+                        <input type="text" id="custom-slug" placeholder="summer24" pattern="[a-zA-Z0-9-_]{3,32}" maxlength="32">
+                    </div>
+                    <div class="slug-field">
+                        <label for="link-title">Title (optional)</label>
+                        <input type="text" id="link-title" placeholder="Summer Campaign 2024">
+                    </div>
+                    <div class="slug-field">
+                        <label for="link-tag">Tag</label>
+                        <select id="link-tag">
+                            <option value="active">Active</option>
+                            <option value="social">Social</option>
+                            <option value="campaign">Campaign</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="result-banner" id="result-banner">
+                    <span id="result-text"></span>
+                    <button type="button" class="link-action-btn" id="copy-result-btn">Copy link</button>
+                </div>
+            </section>
+
+            <div class="links-layout">
+                <section class="links-main">
+                    <div class="links-main-header">
+                        <h3>Recent Shortlinks</h3>
+                        <div class="links-toolbar">
+                            <button type="button" class="toolbar-btn active" id="sort-date" title="Sort by date" aria-label="Sort by date">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M7 12h10M10 18h4"></path></svg>
+                            </button>
+                            <button type="button" class="toolbar-btn" id="sort-clicks" title="Sort by clicks" aria-label="Sort by clicks">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19V5M9 19V9M14 19V3M19 19v-7"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="links-feed" id="links-feed">
+                        <div class="empty-state" id="empty-state">
+                            <h4>No links yet</h4>
+                            <p>Paste a URL above and hit SHORTEN NOW to create your first link.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <aside class="links-sidebar-widgets">
+                    <div class="widget widget-dark">
+                        <div class="widget-label">Link Vault</div>
+                        <p class="widget-stat" id="stat-total-links">0</p>
+                        <p class="widget-desc">Total shortlinks in your workspace. Keep campaigns organized with custom slugs and tags.</p>
+                        <button type="button" class="widget-btn" id="widget-new-btn">Create Link</button>
+                    </div>
+                    <div class="widget widget-light">
+                        <div class="widget-label">Traffic Pulse</div>
+                        <p class="widget-stat"><span id="stat-total-clicks">0</span> <span>clicks</span></p>
+                        <p class="widget-desc">Top performer: <strong id="stat-top-link">—</strong></p>
+                        <a href="/dashboard#analytics" class="widget-link">
+                            View detailed stats
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                        </a>
+                    </div>
+                </aside>
+            </div>
+
+            <footer class="page-footer">
+                <span>© <%= new Date().getFullYear() %> CreatorOS Ecosystem · Titli Module v1.2.4</span>
+                <div class="page-footer-links">
+                    <a href="/services/url-shortener">API Docs</a>
+                    <a href="/settings">Webhooks</a>
+                    <a href="/">Terms</a>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/js/pages/my-links.js"></script>
+</body>
+</html>
