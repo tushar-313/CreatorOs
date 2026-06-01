@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const connectDB = require("../connect");
+const { wantsHtml } = require("../utils/requestType");
 
 const protect = async (req, res, next) => {
     try {
@@ -8,7 +9,12 @@ const protect = async (req, res, next) => {
         const token = req.cookies.token || bearerToken;
 
         if (!token) {
-        return res.redirect("/login");
+            if (wantsHtml(req)) return res.redirect("/login");
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required",
+                error: "Authentication required",
+            });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -20,7 +26,12 @@ const protect = async (req, res, next) => {
             const session = await ContributorSession.findOne({ contributorId: decoded.id });
 
             if (!session) {
-                return res.redirect("/login");
+                if (wantsHtml(req)) return res.redirect("/login");
+                return res.status(401).json({
+                    success: false,
+                    message: "Invalid session",
+                    error: "Invalid session",
+                });
             }
         } else {
             // For regular users, check if email is verified
@@ -40,13 +51,22 @@ const protect = async (req, res, next) => {
 
         next();
     } catch (error) {
-        return res.redirect("/login");
+        if (wantsHtml(req)) return res.redirect("/login");
+        return res.status(401).json({
+            success: false,
+            message: "Invalid or expired token",
+            error: "Invalid or expired token",
+        });
     }
 };
 
 const requireAdmin = (req, res, next) => {
     if (req.user.role !== "admin") {
-        return res.status(403).json({ success: false, message: "Admin access required" });
+        return res.status(403).json({
+            success: false,
+            message: "Admin access required",
+            error: "Admin access required",
+        });
     }
 
     return next();
@@ -57,6 +77,7 @@ const preventContributorWrites = (req, res, next) => {
         return res.status(403).json({
             success: false,
             message: "Contributor accounts do not have permission to modify data.",
+            error: "Contributor accounts do not have permission to modify data.",
         });
     }
 

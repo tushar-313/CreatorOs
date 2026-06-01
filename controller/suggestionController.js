@@ -1,4 +1,5 @@
 const services = require('../services.config');
+const asyncHandler = require('../utils/asyncHandler');
 
 async function generateAISuggestions(topic) {
   // If OpenAI API key is configured, use it for real AI generation

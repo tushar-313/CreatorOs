@@ -83,7 +83,7 @@ const handleGetQRCode = asyncHandler(async (req, res) => {
     const entry = await Url.findOne({ shortId });
 
     if (!entry) {
-        return res.status(404).json({ error: "Short URL not found" });
+        return res.status(404).json({ success: false, message: "Short URL not found", error: "Short URL not found" });
     }
 
     const baseUrl = process.env.BASE_URL || 'http://localhost:8001';
@@ -116,7 +116,7 @@ const handleDownloadQRCode = asyncHandler(async (req, res) => {
     const entry = await Url.findOne({ shortId });
 
     if (!entry) {
-        return res.status(404).json({ error: "Short URL not found" });
+        return res.status(404).json({ success: false, message: "Short URL not found", error: "Short URL not found" });
     }
 
     const baseUrl = process.env.BASE_URL || 'http://localhost:8001';
@@ -146,10 +146,10 @@ const handleUpdateQRColors = asyncHandler(async (req, res) => {
 
     const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
     if (qrFgColor && !hexRegex.test(qrFgColor)) {
-        return res.status(400).json({ error: "Invalid qrFgColor hex value" });
+        return res.status(400).json({ success: false, message: "Invalid qrFgColor hex value", error: "Invalid qrFgColor hex value" });
     }
     if (qrBgColor && !hexRegex.test(qrBgColor)) {
-        return res.status(400).json({ error: "Invalid qrBgColor hex value" });
+        return res.status(400).json({ success: false, message: "Invalid qrBgColor hex value", error: "Invalid qrBgColor hex value" });
     }
 
     const updated = await Url.findOneAndUpdate(
@@ -164,10 +164,11 @@ const handleUpdateQRColors = asyncHandler(async (req, res) => {
     );
 
     if (!updated) {
-        return res.status(404).json({ error: "Short URL not found" });
+        return res.status(404).json({ success: false, message: "Short URL not found", error: "Short URL not found" });
     }
 
     return res.json({
+        success: true,
         message:   "QR colors updated",
         qrFgColor: updated.qrFgColor,
         qrBgColor: updated.qrBgColor,
@@ -180,7 +181,7 @@ const handleGetAnalytics = asyncHandler(async (req, res) => {
     const entry = await Url.findOne({ shortId });
 
     if (!entry) {
-        return res.status(404).json({ error: "Short URL not found" });
+        return res.status(404).json({ success: false, message: "Short URL not found", error: "Short URL not found" });
     }
 
     const qrClicks     = entry.visitHistory ? entry.visitHistory.filter((v) => v.source === "qr").length : 0;

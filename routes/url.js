@@ -9,10 +9,11 @@ const {
 } = require('../controller/url');
 const protect = require('../middleware/auth');
 const { preventContributorWrites } = require('../middleware/auth');
+const { urlShortenerApiLimiter } = require('../middleware/rateLimiters');
 
 // ── Short URL Endpoints ─────────────────────────────────────────────────────
-router.post('/shorten', protect, preventContributorWrites, handleGenerateShortUrl);
-router.post('/', protect, preventContributorWrites, handleGenerateShortUrl);
+router.post('/shorten', protect, preventContributorWrites, urlShortenerApiLimiter, handleGenerateShortUrl);
+router.post('/', protect, preventContributorWrites, urlShortenerApiLimiter, handleGenerateShortUrl);
 
 // ── QR Code Endpoints ───────────────────────────────────────────────────────
 router.get('/qr/:shortId/download', handleDownloadQRCode);      

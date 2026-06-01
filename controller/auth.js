@@ -3,12 +3,14 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const connectDB = require("../connect");
 const asyncHandler = require("../utils/asyncHandler");
+const { wantsHtml } = require("../utils/requestType");
 
 const CONTRIBUTOR_NAME = "Contributor";
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const VERIFICATION_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 const GUEST_CONTRIBUTOR_ROLE = "guest_contributor";
 const GENERIC_LOGIN_ERROR = "Invalid email or password";
+const GOOGLE_AUTH_CANCELLED_ERROR = "Google sign-in was cancelled or could not be completed.";
 
 async function getUserModel() {
     await connectDB();
@@ -26,12 +28,6 @@ function getVerificationTokenExpiry() {
 function isVerificationTokenExpired(expiryDate) {
     return expiryDate < new Date();
 }
-
-function wantsHtml(req) {
-    const accept = req.headers.accept || "";
-    return accept.includes("text/html");
-}
-
 function isGoogleAuthConfigured() {
     return Boolean(
         process.env.GOOGLE_CLIENT_ID &&
@@ -80,13 +76,16 @@ function setAuthCookie(res, token) {
     res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.COOKIE_SAME_SITE || "lax",
         maxAge: ONE_WEEK_MS,
     });
 }
 
 function redirectWithLoginError(res, error) {
-    return res.redirect(`/login?error=${encodeURIComponent(error)}`);
+    const message = error === GOOGLE_AUTH_CANCELLED_ERROR 
+        ? error 
+        : GENERIC_LOGIN_ERROR;
+    return res.redirect(`/login?error=${encodeURIComponent(message)}`);
 }
 
 function renderLoginError(req, res) {
@@ -205,7 +204,7 @@ const login = asyncHandler(async (req, res, next) => {
 const handleGoogleCallback = async (req, res) => {
     try {
         if (!req.user) {
-            return redirectWithLoginError(res, "Google sign-in was cancelled or could not be completed.");
+            return redirectWithLoginError(res, GOOGLE_AUTH_CANCELLED_ERROR);
         }
 
         const token = createToken(req.user);
