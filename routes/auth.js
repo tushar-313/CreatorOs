@@ -1,8 +1,8 @@
 const express = require("express");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const { signup, login, handleGoogleCallback, loginAsContributor } = require("../controller/auth");
-const { signupValidator, loginValidator } = require("../middleware/validateAuth");
+const { signup, login, handleGoogleCallback, loginAsContributor, verifyEmail, resendVerificationEmail } = require("../controller/auth");
+const { signupValidator, loginValidator } = require("../middleware/validators");
 const connectDB = require("../connect");
 
 const router = express.Router();
@@ -112,6 +112,18 @@ router.get("/auth/google/callback", (req, res, next) => {
         session: false,
     })(req, res, next);
 }, handleGoogleCallback);
+
+router.get("/verify-email", (req, res) => {
+    res.render("verify-email", { error: null, success: null, expiredToken: false });
+});
+
+router.post("/verify-email", verifyEmail);
+
+router.get("/resend-verification", (req, res) => {
+    res.render("resend-verification", { error: null, success: null });
+});
+
+router.post("/resend-verification", resendVerificationEmail);
 
 router.get("/logout", (req, res) => {
     res.clearCookie("token");

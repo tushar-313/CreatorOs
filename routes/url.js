@@ -3,13 +3,27 @@ const router = express.Router();
 const {
     handleGenerateShortUrl,
     handleListUserLinks,
+    handleGetQRCode,
+    handleDownloadQRCode,
+    handleUpdateQRColors,
     handleGetAnalytics,
 } = require('../controller/url');
 const protect = require('../middleware/auth');
 const { preventContributorWrites } = require('../middleware/auth');
+const { urlShortenerApiLimiter } = require('../middleware/rateLimiters');
 
 router.get('/', protect, handleListUserLinks);
-router.post('/', protect, preventContributorWrites, handleGenerateShortUrl);
 router.get('/analytics/:shortId', handleGetAnalytics);
+// ── Short URL Endpoints ─────────────────────────────────────────────────────
+router.post('/shorten', protect, preventContributorWrites, urlShortenerApiLimiter, handleGenerateShortUrl);
+router.post('/', protect, preventContributorWrites, urlShortenerApiLimiter, handleGenerateShortUrl);
+
+// ── QR Code Endpoints ───────────────────────────────────────────────────────
+router.get('/qr/:shortId/download', handleDownloadQRCode);      
+router.get('/qr/:shortId',          handleGetQRCode);       
+router.patch('/qr/:shortId/colors', protect, preventContributorWrites, handleUpdateQRColors);
+
+// ── Analytics Endpoints ─────────────────────────────────────────────────────
+router.get('/analytics/:shortId',   handleGetAnalytics);
 
 module.exports = router;
