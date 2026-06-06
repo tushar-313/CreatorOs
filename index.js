@@ -411,4 +411,15 @@ if (require.main === module) {
     });
 }
 
+app.get('/analytics', protect, asyncHandler(async (req, res) => {
+    const userDoc = await User.findById(req.user.id)
+        .select('name email')
+        .lean();
+
+    return res.render('analytics', {
+        services,
+        user: buildAccountViewModel(userDoc, req.user),
+    });
+}));
+
 module.exports = app;
