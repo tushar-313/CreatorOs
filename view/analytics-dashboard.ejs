@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* ── Retro SaaS Neo-Brutalist Color Palette ── */
         :root {
@@ -918,7 +918,7 @@
             stroke-linejoin: round;
         }
         .chart-dot   { fill: var(--purple-2); stroke: #06101f; stroke-width: 3; }
-        .chart-label, .chart-y { fill: var(--muted-2); font-size: 13px; font-family: 'Poppins', sans-serif; }
+        .chart-label, .chart-y { fill: var(--muted-2); font-size: 13px; font-family: 'Inter', sans-serif; }
 
         .chart-dot {
             fill: var(--accent-teal);
@@ -953,7 +953,7 @@
             overflow: hidden;
         }
         .chart-dot   { fill: var(--purple-2); stroke: #06101f; stroke-width: 3; }
-        .chart-label, .chart-y { fill: var(--muted-2); font-size: 13px; font-family: 'Poppins', sans-serif; }
+        .chart-label, .chart-y { fill: var(--muted-2); font-size: 13px; font-family: 'Inter', sans-serif; }
 
         .donut-layout {
             display: grid;
@@ -1466,7 +1466,7 @@
                 <p class="sidebar-label">Services</p>
                 <% services.forEach((service) => { %>
                     <a class="service-link <%= service.status %>" href="<%= service.route %>" title="<%= service.name %>">
-                        <svg viewBox="0 0 24 24"><path d="M12 3v18"></path><path d="M3 12h18"></path></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><%- service.svgPath || '<path d="M12 3v18"></path><path d="M3 12h18"></path>' %></svg>
                         <span class="service-name"><%= service.name %></span>
                     </a>
                 <% }) %>

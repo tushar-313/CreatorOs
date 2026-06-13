@@ -16,7 +16,7 @@
   <!-- Import Clash Display/Space Grotesk & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     /* ── Retro SaaS Neo-Brutalist Color Palette ── */
@@ -1808,9 +1808,7 @@
         <% services.forEach(function(service) { %>
           <a class="service-link <%= service.status %> <%= service.key === 'dm-automation' ? 'active' : '' %>"
              href="<%= service.route %>" title="<%= service.name %>">
-            <svg class="nav-icon" viewBox="0 0 24 24">
-              <path d="M12 3v18M3 12h18"></path>
-            </svg>
+            <svg class="nav-icon" viewBox="0 0 24 24"><%- service.svgPath || '<path d="M12 3v18M3 12h18"></path>' %></svg>
             <span class="service-name"><%= service.name %></span>
           </a>
         <% }) %>

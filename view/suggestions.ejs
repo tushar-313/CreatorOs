@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #06101f;
@@ -40,7 +40,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       color: var(--text);
       background:
         radial-gradient(900px 320px at 50% -80px, rgba(56, 189, 248, 0.24), transparent 70%),
@@ -251,7 +251,7 @@
       border: 1px solid var(--border);
       background: var(--surface);
       color: var(--text);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 1rem;
       font-weight: 600;
       backdrop-filter: blur(18px);
@@ -275,7 +275,7 @@
       color: #042f3e;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       box-shadow: 0 16px 34px rgba(34, 211, 238, 0.2);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
@@ -406,7 +406,7 @@
       border: 1px solid var(--border);
       color: var(--muted-2);
       background: rgba(255, 255, 255, 0.04);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
@@ -501,12 +501,10 @@
 
       <nav class="sidebar-section" aria-label="Services">
         <p class="sidebar-label">Services</p>
-        <% services.forEach(function(service) { %>
+        <% services.forEach((service) => { %>
           <a class="service-link <%= service.status %> <%= service.key === 'suggestion-tool' ? 'active' : '' %>"
              href="<%= service.route %>" title="<%= service.name %>">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M12 3v18"></path><path d="M3 12h18"></path>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><%- service.svgPath || '<path d="M12 3v18"></path><path d="M3 12h18"></path>' %></svg>
             <span class="service-name"><%= service.name %></span>
           </a>
         <% }) %>
