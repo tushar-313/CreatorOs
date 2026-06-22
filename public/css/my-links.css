@@ -672,10 +672,13 @@
         box-shadow 0.12s ease;
 }
 
-/* Improve cursor consistency for clickable controls */
-
-.sidebar a,
-.link-action-btn,
-button {
-    cursor: pointer;
+.btn-shorten:disabled,
+.link-action-btn:disabled,
+.widget-btn:disabled,
+.btn-new-link:disabled,
+.toolbar-btn:disabled,
+.btn-retro:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
