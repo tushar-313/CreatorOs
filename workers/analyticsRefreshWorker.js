@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const Creator = require("../model/creator");
 const AnalyticsSnapshot = require("../model/analyticsSnapshot");
 const EngagementHistory = require("../model/engagementHistory");
+const { fetchInstagramAnalytics } = require("../utils/instagramApi");
 
 // Runs every 6 hours
 cron.schedule("0 */6 * * *", async () => {
@@ -11,26 +12,12 @@ cron.schedule("0 */6 * * *", async () => {
         const creators = await Creator.find({});
 
         for (const creator of creators) {
-            let fetchedData = {
-                followers: 0,
-                following: 0,
-                totalPosts: 0,
-                totalLikes: 0,
-                totalComments: 0,
-                totalViews: 0,
-                engagementRate: 0,
-            };
-
-            if (creator.platform === 'instagram') {
-                try {
-                    const { fetchInstagramProfile } = require('../utils/instagramProfileService');
-                    const profile = await fetchInstagramProfile(creator.username);
-                    fetchedData.followers = profile.followers || 0;
-                    fetchedData.following = profile.following || 0;
-                    fetchedData.totalPosts = profile.totalPosts || 0;
-                } catch (err) {
-                    console.error(`[AnalyticsWorker] Failed to fetch profile for ${creator.username}:`, err.message);
-                }
+            let fetchedData;
+            try {
+                fetchedData = await fetchInstagramAnalytics(creator);
+            } catch (err) {
+                console.error(`[AnalyticsWorker] Skipping creator ${creator.username} due to API error:`, err.message);
+                continue;
             }
 
             // Get last snapshot for growth comparison
