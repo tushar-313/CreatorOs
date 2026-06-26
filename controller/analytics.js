@@ -2,6 +2,7 @@ const Creator = require("../model/creator");
 const AnalyticsSnapshot = require("../model/analyticsSnapshot");
 const EngagementHistory = require("../model/engagementHistory");
 const asyncHandler = require("../utils/asyncHandler");
+const { fetchInstagramAnalytics } = require("../utils/instagramApi");
 
 // GET /api/analytics/:creatorId/snapshots
 const getSnapshots = asyncHandler(async (req, res) => {
@@ -43,26 +44,11 @@ const triggerRefresh = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: "Creator not found" });
     }
 
-    let fetchedData = {
-        followers: 0,
-        following: 0,
-        totalPosts: 0,
-        totalLikes: 0,
-        totalComments: 0,
-        totalViews: 0,
-        engagementRate: 0,
-    };
-
-    if (creator.platform === 'instagram') {
-        try {
-            const { fetchInstagramProfile } = require('../utils/instagramProfileService');
-            const profile = await fetchInstagramProfile(creator.username);
-            fetchedData.followers = profile.followers || 0;
-            fetchedData.following = profile.following || 0;
-            fetchedData.totalPosts = profile.totalPosts || 0;
-        } catch (err) {
-            console.error(`[Analytics] Failed to fetch profile for ${creator.username}:`, err.message);
-        }
+    let fetchedData;
+    try {
+        fetchedData = await fetchInstagramAnalytics(creator);
+    } catch (error) {
+        return res.status(502).json({ success: false, message: "Failed to fetch data from external API", error: error.message });
     }
 
     const snapshot = await AnalyticsSnapshot.create({
