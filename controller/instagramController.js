@@ -1,7 +1,20 @@
 const { fetchInstagramProfile, InstagramProfileError, validateUsername } = require('../utils/instagramProfileService');
 const Redis = require('ioredis');
 
-const redis = new Redis(process.env.REDIS_URI || 'redis://127.0.0.1:6379');
+const REDIS_URI = process.env.REDIS_URI || process.env.REDIS_URL;
+const redis = REDIS_URI
+    ? new Redis(REDIS_URI, {
+        connectTimeout: 5000,
+        lazyConnect: true,
+    })
+    : null;
+const memoryStore = new Map();
+
+if (redis) {
+    redis.on('error', (error) => {
+        console.warn(`[InstagramProfile] Redis error: ${error.message}`);
+    });
+}
 
 /**
  * @function getCooldownSeconds
@@ -22,6 +35,23 @@ function getLookupKey(req) {
     return req.user?.id || req.ip || 'anonymous';
 }
 
+function getMemoryValue(key) {
+    const entry = memoryStore.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt <= Date.now()) {
+        memoryStore.delete(key);
+        return null;
+    }
+    return entry.value;
+}
+
+function setMemoryValue(key, value, ttlSeconds) {
+    memoryStore.set(key, {
+        value,
+        expiresAt: Date.now() + ttlSeconds * 1000,
+    });
+}
+
 /**
  * @function assertLookupAllowed
  * @description Enforces a distributed per-user cooldown using Redis (SET NX EX),
@@ -37,6 +67,22 @@ async function assertLookupAllowed(req) {
     }
 
     const lookupKey = `ig:cooldown:${getLookupKey(req)}`;
+    if (!redis) {
+        const expiresAt = getMemoryValue(lookupKey);
+        if (expiresAt) {
+            const retryAfter = Math.max(1, Math.ceil((expiresAt - Date.now()) / 1000));
+            throw new InstagramProfileError(
+                'RATE_LIMITED',
+                `Please wait ${retryAfter} seconds before fetching another Instagram profile.`,
+                429,
+                { retryAfter }
+            );
+        }
+
+        setMemoryValue(lookupKey, Date.now() + cooldownSeconds * 1000, cooldownSeconds);
+        return;
+    }
+
     const result = await redis.set(lookupKey, '1', 'EX', cooldownSeconds, 'NX');
 
     if (!result) {
@@ -94,7 +140,9 @@ async function getInstagramProfile(req, res) {
         await assertLookupAllowed(req);
 
         const cacheKey = `ig:profile:${username}`;
-        const cachedProfile = await redis.get(cacheKey);
+        const cachedProfile = redis
+            ? await redis.get(cacheKey)
+            : getMemoryValue(cacheKey);
 
         if (cachedProfile) {
             return res.json({
@@ -105,7 +153,11 @@ async function getInstagramProfile(req, res) {
 
         const profile = await fetchInstagramProfile(username);
 
-        await redis.set(cacheKey, JSON.stringify(profile), 'EX', 1800); // 30 minutes TTL
+        if (redis) {
+            await redis.set(cacheKey, JSON.stringify(profile), 'EX', 1800); // 30 minutes TTL
+        } else {
+            setMemoryValue(cacheKey, JSON.stringify(profile), 1800);
+        }
 
         return res.json({
             success: true,

@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator, rateLimit } = require('express-rate-limit');
 const { wantsHtml } = require('../utils/requestType');
 const { buildShortenerViewModel } = require('../utils/viewModels');
 
@@ -70,10 +70,14 @@ const emailVerificationLimiter = rateLimit({
 
 const MongoStore = require('rate-limit-mongo');
 
+function keyByUserOrIp(req) {
+    return req.user?.id ? `user:${req.user.id}` : ipKeyGenerator(req.ip);
+}
+
 const aiGenerationLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // 5 requests per 15 minutes
-    keyGenerator: (req) => req.user?.id || req.ip || 'anonymous',
+    keyGenerator: keyByUserOrIp,
     store: process.env.MONGODB_URI ? new MongoStore({
         uri: process.env.MONGODB_URI,
         expireTimeMs: 15 * 60 * 1000,
@@ -89,7 +93,7 @@ const aiGenerationLimiter = rateLimit({
 const instagramProfileLimiter = rateLimit({
     windowMs: (process.env.INSTAGRAM_LOOKUP_COOLDOWN_SECONDS || 30) * 1000,
     max: 1,
-    keyGenerator: (req) => req.user?.id || req.ip || 'anonymous',
+    keyGenerator: keyByUserOrIp,
     store: process.env.MONGODB_URI ? new MongoStore({
         uri: process.env.MONGODB_URI,
         expireTimeMs: (process.env.INSTAGRAM_LOOKUP_COOLDOWN_SECONDS || 30) * 1000,
