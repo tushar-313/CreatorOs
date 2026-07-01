@@ -602,7 +602,12 @@ const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
 if (require.main === module) {
-    app.listen(port, () => {
+    app.listen(port, (error) => {
+        if (error) {
+            console.error(`Failed to start server on port ${port}: ${error.message}`);
+            process.exit(1);
+        }
+
         const url = process.env.APP_URL || `http://localhost:${port}`;
         console.log(`Server is running on ${url}`);
     });
