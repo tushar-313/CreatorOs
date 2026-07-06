@@ -54,11 +54,19 @@ app.set("view engine", "ejs");
 app.set('views', path.join(__dirname, 'view'));
 app.locals.BRAND = BRAND;
 
+// Generate a per-request nonce for inline scripts (used by CSP below and
+// exposed to views via res.locals.nonce)
+const crypto = require('crypto');
+app.use((req, res, next) => {
+    res.locals.nonce = crypto.randomBytes(16).toString('base64');
+    next();
+});
+
 // Content Security Policy (CSP) header - defense-in-depth against XSS
 app.use((req, res, next) => {
     res.setHeader(
         'Content-Security-Policy',
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none';"
+        `default-src 'self'; script-src 'self' 'nonce-${res.locals.nonce}' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; object-src 'none'; frame-src 'none';`
     );
     next();
 });
