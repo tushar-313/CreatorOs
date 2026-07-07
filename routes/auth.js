@@ -118,6 +118,8 @@ router.get("/login", (req, res) => {
     res.render("login", {
         error: errorMessages[req.query.error] || req.query.error || null,
         googleAuthConfigured,
+        verificationUnavailable: req.query.verificationUnavailable === "1" || req.query.verificationUnavailable === "true",
+        unverifiedEmail: req.query.email || null,
     });
 });
 
@@ -310,7 +312,15 @@ router.post("/verify-email", emailVerificationLimiter, verifyEmail);
  *         description: Internal server error
  */
 router.get("/resend-verification", (req, res) => {
-    res.render("resend-verification", { error: null, success: null });
+    res.render("resend-verification", {
+        error: null,
+        success: null,
+        prefilledEmail: req.query.email || null,
+        verificationDeliveryUnavailable: req.query.delivery === "unavailable",
+        backToLoginUrl: req.query.delivery === "unavailable"
+            ? `/login?verificationUnavailable=1&email=${encodeURIComponent(req.query.email || "")}`
+            : "/login",
+    });
 });
 
 

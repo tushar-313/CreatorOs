@@ -468,8 +468,13 @@
                     <div class="auth-success" role="alert">
                         <h3>✓ Account Created!</h3>
                         <p><%= success %></p>
+                        <% if (typeof verificationDeliveryUnavailable !== 'undefined' && verificationDeliveryUnavailable) { %>
+                            <p>Email delivery is temporarily unavailable, so verification cannot be sent yet.</p>
+                        <% } %>
                         <div class="success-actions">
-                            <a href="/resend-verification">Resend Verification Email</a>
+                            <% if (typeof verificationDeliveryUnavailable === 'undefined' || !verificationDeliveryUnavailable) { %>
+                                <a href="/resend-verification?email=<%= encodeURIComponent(typeof verificationEmail !== 'undefined' ? verificationEmail : '') %>">Resend Verification Email</a>
+                            <% } %>
                             <a href="/login">Back to Login</a>
                         </div>
                     </div>

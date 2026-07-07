@@ -51,6 +51,24 @@ function createTransporter() {
 }
 
 /**
+ * @function isEmailTransportConfigured
+ * @description Checks whether the deployment has enough mail settings to attempt delivery.
+ * @returns {boolean}
+ */
+function isEmailTransportConfigured() {
+  const currentEmailUser = process.env.EMAIL_USER;
+  const currentEmailPassword = process.env.EMAIL_PASSWORD;
+  const currentEmailService = process.env.EMAIL_SERVICE;
+  const currentEmailHost = process.env.EMAIL_HOST;
+
+  return Boolean(
+    currentEmailUser &&
+    currentEmailPassword &&
+    (currentEmailService || currentEmailHost)
+  );
+}
+
+/**
  * @function sendInvitationEmail
  * @description Sends a collaboration invitation email to a specified recipient.
  * @param {Object} req - Express request object
@@ -201,4 +219,5 @@ module.exports = {
   sendInvitationEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
+  isEmailTransportConfigured,
 };

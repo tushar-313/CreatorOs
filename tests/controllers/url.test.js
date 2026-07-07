@@ -1,6 +1,8 @@
 process.env.USE_MOCK_DB = "true";
 const request = require('supertest');
+const bcrypt = require('bcryptjs');
 const app = require('../../index');
+const User = require('../../model/user');
 
 describe('URL Controller Endpoints', () => {
     const csrfCookie = '_csrf=testtoken';
@@ -8,6 +10,15 @@ describe('URL Controller Endpoints', () => {
     let authCookie;
 
     beforeAll(async () => {
+        await User.deleteMany({});
+        const password = await bcrypt.hash('Password123!', 10);
+        await User.create({
+            name: 'Verified User',
+            email: 'test@local.com',
+            password,
+            isVerified: true,
+        });
+
         const res = await request(app)
             .post('/login')
             .set('Cookie', [csrfCookie])

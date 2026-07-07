@@ -534,15 +534,21 @@
         <!-- Right Panel -->
         <section class="right-panel">
             <div class="form-container">
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="auth-error" role="alert">
+                        <%= error %>
+                    </div>
+                <% } %>
+
                 <% if (typeof unverifiedEmail !== 'undefined' && unverifiedEmail) { %>
                     <div class="auth-unverified" role="alert">
                         <h3>📧 Email Not Verified</h3>
                         <p>Please verify your email address before logging in.</p>
-                        <a href="/resend-verification?email=<%= encodeURIComponent(unverifiedEmail) %>">Resend Verification Email</a>
-                    </div>
-                <% } else if (typeof error !== 'undefined' && error) { %>
-                    <div class="auth-error" role="alert">
-                        <%= error %>
+                        <% if (typeof verificationUnavailable !== 'undefined' && verificationUnavailable) { %>
+                            <p>Email delivery is temporarily unavailable, so you can continue to log in without verification.</p>
+                        <% } else { %>
+                            <a href="/resend-verification?email=<%= encodeURIComponent(unverifiedEmail) %>">Resend Verification Email</a>
+                        <% } %>
                     </div>
                 <% } %>
 
@@ -569,6 +575,9 @@
 
                 <form action="/login" method="POST" id="email-login-form">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <% if (typeof verificationUnavailable !== 'undefined' && verificationUnavailable) { %>
+                        <input type="hidden" name="allowUnverifiedLogin" value="1">
+                    <% } %>
                     <div class="form-group">
                         <div class="label-row">
                             <label for="login-email">Email Address</label>

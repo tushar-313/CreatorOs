@@ -259,6 +259,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000 # Replace with production URL when dep
 # -------------------------------------------------------
 # Email Configuration
 
+> [!IMPORTANT]
+> Hosted deployments must configure working email delivery for verification and password reset.
+> Set `EMAIL_USER` and `EMAIL_PASSWORD`, plus either `EMAIL_SERVICE` or `EMAIL_HOST`/`EMAIL_PORT`, and keep `APP_URL` pointed at the deployed site so verification links resolve correctly.
+
 # Supported values may include:
 # smtp, gmail, resend, sendgrid, etc.
 

@@ -14,6 +14,7 @@ const {
     clearResetAttempts,
     getRemainingResetLockoutTime,
 } = require("../utils/loginAttemptManager");
+const { isEmailTransportConfigured } = require("../utils/email");
 
 const CONTRIBUTOR_NAME = "Contributor";
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -21,6 +22,7 @@ const VERIFICATION_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 const GUEST_CONTRIBUTOR_ROLE = "guest_contributor";
 const GENERIC_LOGIN_ERROR = "Invalid email or password";
 const GOOGLE_AUTH_CANCELLED_ERROR = "Google sign-in was cancelled or could not be completed.";
+const VERIFICATION_UNAVAILABLE_ERROR = "Email verification is temporarily unavailable because email delivery is not configured. Please try again later or contact support.";
 
 /**
  * @function getUserModel
@@ -207,30 +209,44 @@ const signup = asyncHandler(async (req, res, next) => {
         verificationTokenExpiry,
     });
 
-    // Send verification email
-    try {
-        const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
-        const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+    let verificationDeliveryUnavailable = false;
 
-        await sendVerificationEmail({
-            to: normalizedEmail,
-            verificationLink,
-            userName: name,
-        });
+    // Send verification email when delivery is configured.
+    try {
+        if (isEmailTransportConfigured()) {
+            const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
+            const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+
+            await sendVerificationEmail({
+                to: normalizedEmail,
+                verificationLink,
+                userName: name,
+            });
+        } else {
+            verificationDeliveryUnavailable = true;
+        }
     } catch (emailError) {
         console.error("Failed to send verification email:", emailError);
-        // Don't fail the signup, but let user know to check email or resend
+        verificationDeliveryUnavailable = true;
+        // Don't fail the signup, but let user know verification email could not be delivered.
     }
+
+    const signupSuccessMessage = verificationDeliveryUnavailable
+        ? VERIFICATION_UNAVAILABLE_ERROR
+        : "Sign up successful! Please check your email to verify your account.";
 
     if (wantsHtml(req)) {
         return res.render("signup", { 
             error: null, 
-            success: "Sign up successful! Please check your email to verify your account." 
+            success: signupSuccessMessage,
+            verificationDeliveryUnavailable,
+            verificationEmail: normalizedEmail,
         });
     }
     return res.status(201).json({ 
         success: true, 
-        message: "Sign up successful! Please check your email to verify your account.",
+        message: signupSuccessMessage,
+        verificationDeliveryUnavailable,
         data: { id: user._id, email: user.email } 
     });
 });
@@ -239,6 +255,7 @@ const login = asyncHandler(async (req, res, next) => {
     const User = await getUserModel();
 
     const { email, password } = req.body || {};
+    const allowUnverifiedLogin = req.body?.allowUnverifiedLogin === "1" || req.body?.allowUnverifiedLogin === "true";
     const normalizedEmail = (email && typeof email === 'string') ? email.toLowerCase().trim() : "";
 
     if (!normalizedEmail || !password) {
@@ -266,6 +283,36 @@ const login = asyncHandler(async (req, res, next) => {
         await recordFailedLoginAttempt(normalizedEmail);
         if (wantsHtml(req)) return res.redirect("/login?error=" + encodeURIComponent(GENERIC_LOGIN_ERROR));
         return res.status(401).json({ success: false, message: GENERIC_LOGIN_ERROR });
+    }
+
+    if (user.authProvider !== "google" && !user.isVerified) {
+        const verificationDeliveryUnavailable = !isEmailTransportConfigured();
+
+        if (verificationDeliveryUnavailable && allowUnverifiedLogin) {
+            await clearLoginAttempts(normalizedEmail);
+
+            user.lastLoginAt = new Date();
+            await user.save();
+
+            const token = createToken(user);
+            setAuthCookie(res, token);
+
+            if (wantsHtml(req)) return res.redirect("/dashboard?login=unverified");
+            return res.status(200).json({ success: true, token, user: serializeUser(user) });
+        }
+
+        if (wantsHtml(req)) {
+            return res.redirect(`/resend-verification?email=${encodeURIComponent(normalizedEmail)}${verificationDeliveryUnavailable ? "&delivery=unavailable" : ""}`);
+        }
+
+        return res.status(403).json({
+            success: false,
+            message: verificationDeliveryUnavailable
+                ? VERIFICATION_UNAVAILABLE_ERROR
+                : "Your account is not verified yet. Please check your email or request a new verification link.",
+            unverifiedEmail: normalizedEmail,
+            verificationDeliveryUnavailable,
+        });
     }
 
     await clearLoginAttempts(normalizedEmail);
@@ -387,7 +434,8 @@ const verifyEmail = asyncHandler(async (req, res, next) => {
                 error: "Verification link has expired. Please request a new one.",
                 success: null,
                 expiredToken: true,
-                userEmail: user.email
+                userEmail: user.email,
+                verificationDeliveryUnavailable: !isEmailTransportConfigured(),
             });
         }
         return res.status(410).json({ 
@@ -455,7 +503,9 @@ const resendVerificationEmail = asyncHandler(async (req, res, next) => {
         if (wantsHtml(req)) {
             return res.render("resend-verification", { 
                 success: "Your email is already verified. You can log in now.",
-                error: null
+                error: null,
+                prefilledEmail: normalizedEmail,
+                verificationDeliveryUnavailable: false,
             });
         }
         return res.status(200).json({ 
@@ -464,9 +514,28 @@ const resendVerificationEmail = asyncHandler(async (req, res, next) => {
         });
     }
 
+    if (!isEmailTransportConfigured()) {
+        if (wantsHtml(req)) {
+            return res.status(503).render("resend-verification", {
+                error: VERIFICATION_UNAVAILABLE_ERROR,
+                success: null,
+                prefilledEmail: normalizedEmail,
+                verificationDeliveryUnavailable: true,
+            });
+        }
+
+        return res.status(503).json({
+            success: false,
+            message: VERIFICATION_UNAVAILABLE_ERROR,
+            verificationDeliveryUnavailable: true,
+        });
+    }
+
     // Generate new verification token
     const verificationToken = generateVerificationToken();
     const verificationTokenExpiry = getVerificationTokenExpiry();
+    const previousVerificationToken = user.verificationToken;
+    const previousVerificationTokenExpiry = user.verificationTokenExpiry;
 
     user.verificationToken = verificationToken;
     user.verificationTokenExpiry = verificationTokenExpiry;
@@ -484,27 +553,36 @@ const resendVerificationEmail = asyncHandler(async (req, res, next) => {
         });
     } catch (emailError) {
         console.error("Failed to send verification email:", emailError);
+        user.verificationToken = previousVerificationToken;
+        user.verificationTokenExpiry = previousVerificationTokenExpiry;
+        await user.save();
         if (wantsHtml(req)) {
             return res.status(500).render("resend-verification", { 
-                error: "Failed to send verification email. Please try again later.",
-                success: null
+                error: VERIFICATION_UNAVAILABLE_ERROR,
+                success: null,
+                prefilledEmail: normalizedEmail,
+                verificationDeliveryUnavailable: true,
             });
         }
         return res.status(500).json({ 
             success: false, 
-            message: "Failed to send verification email. Please try again later." 
+            message: VERIFICATION_UNAVAILABLE_ERROR,
+            verificationDeliveryUnavailable: true,
         });
     }
 
     if (wantsHtml(req)) {
         return res.render("resend-verification", { 
             success: "Verification email sent! Please check your inbox.",
-            error: null
+            error: null,
+            prefilledEmail: normalizedEmail,
+            verificationDeliveryUnavailable: false,
         });
     }
     return res.status(200).json({ 
         success: true, 
-        message: "Verification email sent successfully!" 
+        message: "Verification email sent successfully!",
+        verificationDeliveryUnavailable: false,
     });
 });
 

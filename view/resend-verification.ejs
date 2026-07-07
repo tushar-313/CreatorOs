@@ -218,6 +218,13 @@
             <p>Enter your email address to receive a new verification link</p>
         </div>
 
+        <% if (typeof verificationDeliveryUnavailable !== 'undefined' && verificationDeliveryUnavailable) { %>
+            <div class="alert error" role="alert">
+                Email verification is temporarily unavailable on this deployment because email delivery is not configured.
+                Please try again later or contact support.
+            </div>
+        <% } %>
+
         <% if (typeof error !== 'undefined' && error) { %>
             <div class="alert error">
                 <%= error %>
@@ -230,7 +237,10 @@
             </div>
             <div style="text-align: center; margin-top: 2rem;">
                 <p style="margin-bottom: 1rem;">Check your email for a verification link to activate your account.</p>
-                <a href="/login" class="btn btn-secondary">Back to Login</a>
+                <a href="<%= typeof backToLoginUrl !== 'undefined' && backToLoginUrl ? backToLoginUrl : '/login' %>" class="btn btn-secondary">Back to Login</a>
+                <% if (typeof verificationDeliveryUnavailable !== 'undefined' && verificationDeliveryUnavailable) { %>
+                    <a href="/dashboard" class="btn btn-secondary" style="margin-top: 0.75rem;">Go to Dashboard</a>
+                <% } %>
             </div>
         <% } else { %>
             <form method="POST" action="/resend-verification">
@@ -244,13 +254,17 @@
                         required 
                         placeholder="you@example.com"
                         autocomplete="email"
+                        value="<%= typeof prefilledEmail !== 'undefined' && prefilledEmail ? prefilledEmail : '' %>"
                     >
                     <p class="help-text">We'll send a verification link to this address.</p>
                 </div>
 
                 <div class="actions">
-                    <button type="submit">Send Verification Email</button>
-                    <a href="/login" class="btn btn-secondary">Back to Login</a>
+                    <button type="submit" <%= verificationDeliveryUnavailable ? 'disabled aria-disabled="true"' : '' %>><%= verificationDeliveryUnavailable ? 'Verification Unavailable' : 'Send Verification Email' %></button>
+                    <a href="<%= typeof backToLoginUrl !== 'undefined' && backToLoginUrl ? backToLoginUrl : '/login' %>" class="btn btn-secondary">Back to Login</a>
+                    <% if (typeof verificationDeliveryUnavailable !== 'undefined' && verificationDeliveryUnavailable) { %>
+                        <a href="/dashboard" class="btn btn-secondary">Go to Dashboard</a>
+                    <% } %>
                 </div>
             </form>
 
