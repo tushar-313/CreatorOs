@@ -131,7 +131,7 @@ const swaggerSpec = require('./utils/swaggerOptions');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.0.0/swagger-ui.min.css' }));
 
 app.use("/api/analytics", protect, analyticsRoutes);
-app.use('/api/instagram', protect, instagramRoutes);
+app.use('/api/instagram', instagramRoutes);
 
 const settingsRoutes = require('./routes/settings');
 app.use('/api/settings', protect, settingsRoutes);
