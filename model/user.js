@@ -266,9 +266,17 @@ class MockUserModel {
     }
 }
 
+const bcrypt = require("bcryptjs");
+
 // Pre-seed the test user in Mock DB so login works immediately
 (async () => {
-    const hashed = await bcrypt.hash("Password123!", 10);
+    let hashed;
+    try {
+        hashed = await bcrypt.hash("Password123!", 10);
+    } catch (e) {
+        hashed = "hashed_password"; // fallback
+    }
+    
     mockUsers.push(new MockUserModel({
         _id: "000000000000000000000001",
         name: "Test User",
