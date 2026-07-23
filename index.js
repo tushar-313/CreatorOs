@@ -57,6 +57,7 @@ const sponsorRoute = require('./routes/sponsor');
 const settingsRoutes = require('./routes/settings');
 const contentRoutes = require('./routes/content');
 const suggestionRoutes = require('./routes/suggestionRoutes');
+const qrCodeRoutes = require('./routes/qrCode');
 
 const { generateCsrf, verifyCsrf } = require('./middleware/csrf');
 
@@ -162,6 +163,7 @@ const { getDashboardData } = require('./utils/dashboardHelper');
 
 app.use('/suggestions', protect, suggestionRoutes);
 app.use('/services/creator-crm', protect, collaborationRoutes);
+app.use('/services/qr-code-generator', qrCodeRoutes);
 app.post('/dashboard/accept-invite', protect, preventContributorWrites, acceptInviteFromDashboard);
 app.get('/invites/accept/:token', acceptInvite);
 
@@ -738,6 +740,7 @@ app.get('/services/:serviceKey', protect, asyncHandler(async (req, res) => {
 const { isValidUrl } = require('./utils/validators');
 
 const { handleGenerateShortUrlRender } = require('./controller/url');
+const { handleQrRedirect } = require('./controller/qrCodeController');
 app.post('/services/url-shortener/shorten', protect, preventContributorWrites, urlShortenerLimiter, handleGenerateShortUrlRender);
 
 // ── FILE UPLOAD POST ──
@@ -800,6 +803,8 @@ app.get('/u/:shortId', asyncHandler(async (req, res) => {
         return res.status(500).send('Server error');
     }
 }));
+
+app.get('/q/:shortId', handleQrRedirect);
 
 // ── SITEMAP ─────────────────────────────────────────────
 app.get('/sitemap.xml', (req, res) => {
